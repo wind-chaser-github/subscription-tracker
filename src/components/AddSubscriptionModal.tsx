@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { db } from '../db/database';
 import type { BillingCycle } from '../db/database';
 import { X } from 'lucide-react';
@@ -17,6 +18,7 @@ const PRESET_COLORS = [
 export const AddSubscriptionModal: React.FC<Props> = ({ onClose, editItem }) => {
   const [name, setName] = useState(editItem?.name || '');
   const [cost, setCost] = useState(editItem ? String(editItem.cost) : '');
+  const [currency, setCurrency] = useState<'USD'|'CNY'>(editItem?.currency || 'USD');
   const [billingCycle, setBillingCycle] = useState<BillingCycle>(editItem?.billingCycle || 'monthly');
   const [nextPaymentDate, setNextPaymentDate] = useState(editItem?.nextPaymentDate || format(new Date(), 'yyyy-MM-dd'));
   const [color, setColor] = useState(editItem?.color || PRESET_COLORS[0]);
@@ -29,6 +31,7 @@ export const AddSubscriptionModal: React.FC<Props> = ({ onClose, editItem }) => 
       await db.subscriptions.update(editItem.id, {
         name,
         cost: parseFloat(cost),
+        currency,
         billingCycle,
         nextPaymentDate,
         color
@@ -37,6 +40,7 @@ export const AddSubscriptionModal: React.FC<Props> = ({ onClose, editItem }) => 
       await db.subscriptions.add({
         name,
         cost: parseFloat(cost),
+        currency,
         billingCycle,
         nextPaymentDate,
         color,
@@ -50,13 +54,13 @@ export const AddSubscriptionModal: React.FC<Props> = ({ onClose, editItem }) => 
 
   const isVariable = billingCycle === 'usage-based' || billingCycle === 'one-time';
 
-  return (
+  return createPortal(
     <div style={{
       position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
       background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       zIndex: 1000, padding: '20px'
-    }}>
+    }} onClick={e => e.stopPropagation()}>
       <div className="glass-panel" style={{ width: '100%', maxWidth: '400px', padding: '30px', position: 'relative' }}>
         <button onClick={onClose} style={{ position: 'absolute', top: '20px', right: '20px', color: 'var(--text-secondary)' }}>
           <X size={24} />
@@ -75,7 +79,13 @@ export const AddSubscriptionModal: React.FC<Props> = ({ onClose, editItem }) => 
               <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)', fontSize: '14px' }}>
                 {isVariable ? 'Cost (Estimated)' : 'Cost'}
               </label>
-              <input type="number" step="0.01" value={cost} onChange={e => setCost(e.target.value)} placeholder="0.00" style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'rgba(0,0,0,0.3)', color: 'white', fontSize: '16px' }} required />
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <select value={currency} onChange={e => setCurrency(e.target.value as 'USD'|'CNY')} style={{ padding: '12px 8px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'rgba(0,0,0,0.3)', color: 'white', fontSize: '16px', width: '80px' }}>
+                  <option value="USD">USD</option>
+                  <option value="CNY">CNY</option>
+                </select>
+                <input type="number" step="0.01" value={cost} onChange={e => setCost(e.target.value)} placeholder="0.00" style={{ flex: 1, padding: '12px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'rgba(0,0,0,0.3)', color: 'white', fontSize: '16px' }} required />
+              </div>
             </div>
             <div style={{ flex: 1 }}>
               <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)', fontSize: '14px' }}>Cycle</label>
@@ -107,6 +117,7 @@ export const AddSubscriptionModal: React.FC<Props> = ({ onClose, editItem }) => 
           </button>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

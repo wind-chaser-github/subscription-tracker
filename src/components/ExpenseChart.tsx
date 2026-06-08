@@ -14,19 +14,21 @@ export const ExpenseChart: React.FC<ExpenseChartProps> = ({ subscriptions, payme
 
   const data = (subscriptions && paymentRecords) 
     ? calculateMonthlyExpenses(subscriptions, paymentRecords) 
-    : [];
+    : { USD: [0,0,0,0,0,0], CNY: [0,0,0,0,0,0] };
 
-  const max = Math.max(...data, 1);
+  // 合并折线图的走势，粗略将 CNY 按 1/7 转换为 USD 单位，仅仅为了表现波动趋势
+  const combinedData = data.USD.map((val, i) => val + (data.CNY[i] / 7));
   
+  const maxExpense = Math.max(...combinedData, 10); // avoid division by 0
   const width = 300;
   const height = 80;
   const generatePath = () => {
-    if (data.length === 0) return '';
-    const stepX = width / (data.length - 1);
+    if (combinedData.length === 0) return '';
+    const stepX = width / (combinedData.length - 1);
     
-    const points = data.map((val, index) => {
-      const x = index * stepX;
-      const y = height - (val / max) * height;
+    const points = combinedData.map((amount, i) => {
+      const x = i * stepX;
+      const y = height - (amount / maxExpense) * height;
       return `${x},${y}`;
     });
 
@@ -52,7 +54,7 @@ export const ExpenseChart: React.FC<ExpenseChartProps> = ({ subscriptions, payme
     }, chartRef);
     
     return () => ctx.revert();
-  }, [data.join(',')]); // 依赖具体数值的变化来重绘
+  }, [combinedData.join(',')]); // 依赖具体数值的变化来重绘
 
   return (
     <div ref={chartRef} style={{ width: '100%', height: '120px', position: 'relative', marginTop: '20px' }}>

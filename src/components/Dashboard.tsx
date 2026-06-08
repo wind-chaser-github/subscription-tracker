@@ -13,10 +13,11 @@ export const Dashboard: React.FC = () => {
   
   const monthlyData = (subscriptions && paymentRecords) 
     ? calculateMonthlyExpenses(subscriptions, paymentRecords)
-    : [0,0,0,0,0,0];
+    : { USD: [0,0,0,0,0,0], CNY: [0,0,0,0,0,0] };
   
   // The last element represents the current month
-  const currentMonthlyTotal = monthlyData[5];
+  const currentMonthlyTotalUSD = monthlyData.USD[5];
+  const currentMonthlyTotalCNY = monthlyData.CNY[5];
 
   useLayoutEffect(() => {
     if (subscriptions && subscriptions.length > 0) {
@@ -38,8 +39,9 @@ export const Dashboard: React.FC = () => {
         <p style={{ color: 'var(--text-secondary)', textTransform: 'uppercase', fontSize: '14px', letterSpacing: '1px', marginBottom: '8px' }}>
           This Month Expense
         </p>
-        <div style={{ fontSize: '48px', fontWeight: 800, letterSpacing: '-2px', background: 'linear-gradient(135deg, #fff, #a5b4fc)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-          ¥{currentMonthlyTotal.toFixed(2)}
+        <div style={{ fontSize: '48px', fontWeight: 800, letterSpacing: '-2px', background: 'linear-gradient(135deg, #fff, #a5b4fc)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', display: 'flex', alignItems: 'baseline', flexWrap: 'wrap', gap: '12px' }}>
+          {currentMonthlyTotalUSD > 0 || currentMonthlyTotalCNY === 0 ? `$${currentMonthlyTotalUSD.toFixed(2)}` : ''}
+          {currentMonthlyTotalCNY > 0 && <span style={{ fontSize: '32px' }}>¥{currentMonthlyTotalCNY.toFixed(2)}</span>}
         </div>
         
         <ExpenseChart subscriptions={subscriptions} paymentRecords={paymentRecords} />

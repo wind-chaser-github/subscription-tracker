@@ -82,7 +82,7 @@ export const SubscriptionCard: React.FC<Props> = ({ subscription }) => {
 
         <div style={{ textAlign: 'right', marginRight: '16px' }}>
           <div style={{ fontSize: '18px', fontWeight: 'bold' }}>
-            ¥{subscription.cost.toFixed(2)}
+            {subscription.currency === 'CNY' ? '¥' : '$'}{subscription.cost.toFixed(2)}
             {isVariable && <span style={{fontSize:'12px', color:'var(--text-muted)'}}> (Est.)</span>}
           </div>
           <div style={{ color: 'var(--text-muted)', fontSize: '12px', textTransform: 'capitalize' }}>
@@ -110,7 +110,7 @@ export const SubscriptionCard: React.FC<Props> = ({ subscription }) => {
                      records?.slice(-3).map(r => (
                        <div key={r.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '6px' }}>
                          <span>{r.date}</span>
-                         <span style={{ fontWeight: 'bold' }}>¥{r.amount.toFixed(2)}</span>
+                         <span style={{ fontWeight: 'bold' }}>{subscription.currency === 'CNY' ? '¥' : '$'}{r.amount.toFixed(2)}</span>
                        </div>
                      ))
                    }

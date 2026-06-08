@@ -6,6 +6,7 @@ export interface Subscription {
   id?: number;
   name: string;
   cost: number; // 基准/预估费用
+  currency?: 'USD' | 'CNY'; // 支持美元和人民币
   billingCycle: BillingCycle;
   nextPaymentDate: string; // ISO date string YYYY-MM-DD
   color: string;

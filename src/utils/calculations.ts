@@ -5,12 +5,13 @@ export const calculateMonthlyExpenses = (
   subscriptions: Subscription[],
   paymentRecords: PaymentRecord[],
   monthsBack = 6
-): number[] => {
-  const data = new Array(monthsBack).fill(0);
+): { USD: number[]; CNY: number[] } => {
+  const dataUSD = new Array(monthsBack).fill(0);
+  const dataCNY = new Array(monthsBack).fill(0);
   const now = new Date();
   
   // 生成过去6个月的标尺（以年-月为 key）
-  const targetMonths = data.map((_, i) => {
+  const targetMonths = dataUSD.map((_, i) => {
     const d = new Date(now.getFullYear(), now.getMonth() - (monthsBack - 1 - i), 1);
     return {
       year: d.getFullYear(),
@@ -34,16 +35,19 @@ export const calculateMonthlyExpenses = (
       if (recordsInMonth.length > 0) {
         // 如果这个月有记录，累加记录金额
         const sum = recordsInMonth.reduce((acc, curr) => acc + curr.amount, 0);
-        data[tm.index] += sum;
+        if (sub.currency === 'CNY') dataCNY[tm.index] += sum;
+        else dataUSD[tm.index] += sum;
       } else {
         // 如果没有记录，退回到默认扣费逻辑 (只对固定类型)
         if (sub.billingCycle === 'monthly') {
-          data[tm.index] += sub.cost;
+          if (sub.currency === 'CNY') dataCNY[tm.index] += sub.cost;
+          else dataUSD[tm.index] += sub.cost;
         } else if (sub.billingCycle === 'yearly') {
           if (isValid(parseISO(sub.nextPaymentDate))) {
             const paymentDate = parseISO(sub.nextPaymentDate);
             if (paymentDate.getMonth() === tm.month) {
-               data[tm.index] += sub.cost;
+               if (sub.currency === 'CNY') dataCNY[tm.index] += sub.cost;
+               else dataUSD[tm.index] += sub.cost;
             }
           }
         }
@@ -52,5 +56,5 @@ export const calculateMonthlyExpenses = (
     });
   });
 
-  return data;
+  return { USD: dataUSD, CNY: dataCNY };
 };
