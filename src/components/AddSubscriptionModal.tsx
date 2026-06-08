@@ -3,35 +3,47 @@ import { db } from '../db/database';
 import type { BillingCycle } from '../db/database';
 import { X } from 'lucide-react';
 import { format } from 'date-fns';
+import type { Subscription } from '../db/database';
 
 interface Props {
   onClose: () => void;
+  editItem?: Subscription;
 }
 
 const PRESET_COLORS = [
   '#E50914', '#1DB954', '#0061FF', '#FF4F00', '#7C3AED', '#10B981', '#F59E0B'
 ];
 
-export const AddSubscriptionModal: React.FC<Props> = ({ onClose }) => {
-  const [name, setName] = useState('');
-  const [cost, setCost] = useState('');
-  const [billingCycle, setBillingCycle] = useState<BillingCycle>('monthly');
-  const [nextPaymentDate, setNextPaymentDate] = useState(format(new Date(), 'yyyy-MM-dd'));
-  const [color, setColor] = useState(PRESET_COLORS[0]);
+export const AddSubscriptionModal: React.FC<Props> = ({ onClose, editItem }) => {
+  const [name, setName] = useState(editItem?.name || '');
+  const [cost, setCost] = useState(editItem ? String(editItem.cost) : '');
+  const [billingCycle, setBillingCycle] = useState<BillingCycle>(editItem?.billingCycle || 'monthly');
+  const [nextPaymentDate, setNextPaymentDate] = useState(editItem?.nextPaymentDate || format(new Date(), 'yyyy-MM-dd'));
+  const [color, setColor] = useState(editItem?.color || PRESET_COLORS[0]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !cost) return;
 
-    await db.subscriptions.add({
-      name,
-      cost: parseFloat(cost),
-      billingCycle,
-      nextPaymentDate,
-      color,
-      icon: 'box',
-      createdAt: new Date().toISOString()
-    });
+    if (editItem?.id) {
+      await db.subscriptions.update(editItem.id, {
+        name,
+        cost: parseFloat(cost),
+        billingCycle,
+        nextPaymentDate,
+        color
+      });
+    } else {
+      await db.subscriptions.add({
+        name,
+        cost: parseFloat(cost),
+        billingCycle,
+        nextPaymentDate,
+        color,
+        icon: 'box',
+        createdAt: new Date().toISOString()
+      });
+    }
 
     onClose();
   };
@@ -50,7 +62,7 @@ export const AddSubscriptionModal: React.FC<Props> = ({ onClose }) => {
           <X size={24} />
         </button>
         
-        <h2 style={{ margin: '0 0 24px 0', fontSize: '24px' }}>Add Subscription</h2>
+        <h2 style={{ margin: '0 0 24px 0', fontSize: '24px' }}>{editItem ? 'Edit Subscription' : 'Add Subscription'}</h2>
         
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div>

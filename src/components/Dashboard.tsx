@@ -38,9 +38,9 @@ export const Dashboard: React.FC = () => {
         <p style={{ color: 'var(--text-secondary)', textTransform: 'uppercase', fontSize: '14px', letterSpacing: '1px', marginBottom: '8px' }}>
           This Month Expense
         </p>
-        <h1 className="text-gradient" style={{ fontSize: '56px', fontWeight: 800, lineHeight: 1 }}>
-          ${currentMonthlyTotal.toFixed(2)}
-        </h1>
+        <div style={{ fontSize: '48px', fontWeight: 800, letterSpacing: '-2px', background: 'linear-gradient(135deg, #fff, #a5b4fc)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+          ¥{currentMonthlyTotal.toFixed(2)}
+        </div>
         
         <ExpenseChart subscriptions={subscriptions} paymentRecords={paymentRecords} />
       </div>

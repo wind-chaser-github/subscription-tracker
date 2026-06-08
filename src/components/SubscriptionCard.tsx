@@ -2,9 +2,10 @@ import React, { useRef, useState, useLayoutEffect } from 'react';
 import gsap from 'gsap';
 import { useLiveQuery } from 'dexie-react-hooks';
 import type { Subscription } from '../db/database';
-import { ChevronDown, Calendar, CreditCard, Trash2, PlusCircle } from 'lucide-react';
+import { ChevronDown, Calendar, CreditCard, Trash2, PlusCircle, Edit2 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { db } from '../db/database';
+import { AddSubscriptionModal } from './AddSubscriptionModal';
 
 interface Props {
   subscription: Subscription;
@@ -12,6 +13,7 @@ interface Props {
 
 export const SubscriptionCard: React.FC<Props> = ({ subscription }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [addingRecord, setAddingRecord] = useState(false);
   const [recordAmount, setRecordAmount] = useState('');
 
@@ -80,7 +82,7 @@ export const SubscriptionCard: React.FC<Props> = ({ subscription }) => {
 
         <div style={{ textAlign: 'right', marginRight: '16px' }}>
           <div style={{ fontSize: '18px', fontWeight: 'bold' }}>
-            ${subscription.cost.toFixed(2)}
+            ¥{subscription.cost.toFixed(2)}
             {isVariable && <span style={{fontSize:'12px', color:'var(--text-muted)'}}> (Est.)</span>}
           </div>
           <div style={{ color: 'var(--text-muted)', fontSize: '12px', textTransform: 'capitalize' }}>
@@ -108,7 +110,7 @@ export const SubscriptionCard: React.FC<Props> = ({ subscription }) => {
                      records?.slice(-3).map(r => (
                        <div key={r.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '6px' }}>
                          <span>{r.date}</span>
-                         <span style={{ fontWeight: 'bold' }}>${r.amount.toFixed(2)}</span>
+                         <span style={{ fontWeight: 'bold' }}>¥{r.amount.toFixed(2)}</span>
                        </div>
                      ))
                    }
@@ -127,13 +129,19 @@ export const SubscriptionCard: React.FC<Props> = ({ subscription }) => {
                  </div>
                )}
             </div>
-            
-            <button onClick={handleDelete} style={{ padding: '8px 12px', borderRadius: '8px', background: 'rgba(239, 68, 68, 0.1)', color: 'var(--accent-danger)', display: 'flex', alignItems: 'center', gap: '6px', transition: 'background 0.2s', marginLeft: '20px' }}>
-              <Trash2 size={16} /> Delete
-            </button>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button onClick={(e) => { e.stopPropagation(); setIsEditing(true); }} style={{ padding: '8px 12px', borderRadius: '8px', background: 'rgba(255, 255, 255, 0.05)', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '6px', transition: 'background 0.2s' }}>
+                <Edit2 size={16} /> Edit
+              </button>
+              <button onClick={handleDelete} style={{ padding: '8px 12px', borderRadius: '8px', background: 'rgba(239, 68, 68, 0.1)', color: 'var(--accent-danger)', display: 'flex', alignItems: 'center', gap: '6px', transition: 'background 0.2s' }}>
+                <Trash2 size={16} /> Delete
+              </button>
+            </div>
           </div>
         </div>
       </div>
+      
+      {isEditing && <AddSubscriptionModal editItem={subscription} onClose={() => setIsEditing(false)} />}
     </div>
   );
 };
